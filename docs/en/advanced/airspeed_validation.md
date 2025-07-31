@@ -8,7 +8,7 @@ By default, the [Missing Data](#missing-data-check), [Data Stuck](#data-stuck-ch
 You can configure which checks are active using the [ASPD_DO_CHECKS](../advanced_config/parameter_reference.md#ASPD_DO_CHECKS) parameter.
 :::
 
-## Overview of Validation Checks
+## Validation Checks
 
 This overview summarizes each check, common causes for failure, and the relevant parameters.
 To configure the delay before starting or stopping the use of airspeed sensor data after it passes or fails validation, see [ASPD_FS_T_START](../advanced_config/parameter_reference.md#ASPD_FS_T_START) and [ASPD_FS_T_STOP](../advanced_config/parameter_reference.md#ASPD_FS_T_STOP).
