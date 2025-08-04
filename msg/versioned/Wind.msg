@@ -1,4 +1,4 @@
-# Wind estimate (from EKF)
+# Wind estimate (from EKF2)
 #
 # Contains the system-wide estimate of horizontal wind velocity and its variance.
 # Published by the navigation filter (EKF2) for use by other flight modules and libraries.

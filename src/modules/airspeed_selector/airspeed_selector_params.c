@@ -149,7 +149,7 @@ PARAM_DEFINE_INT32(ASPD_PRIMARY, 1);
  *
  * Controls which checks are run to check airspeed data for validity. Only applied if ASPD_PRIMARY > 0.
  *
- * Note: The missing data check (bit 0) is always active and cannot be disabled.
+ * Note: The missing data check (bit 0) is implicitly always enabled when ASPD_DO_CHECKS > 0, even if bit 0 is not explicitly set.
  *
  * @min 0
  * @max 31

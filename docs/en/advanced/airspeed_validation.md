@@ -9,6 +9,24 @@ By default, the [Missing Data](#missing-data-check), [Data Stuck](#data-stuck-ch
 You can configure which checks are active using the [ASPD_DO_CHECKS](#aspd_do_checks_table) parameter.
 :::
 
+## TAS Scale Considerations
+
+Airspeed conversions in PX4 typically follow this path:
+IAS (Indicated Airspeed) → CAS (Calibrated Airspeed) → TAS (True Airspeed)
+
+- IAS to CAS accounts for sensor-specific errors and installation effects (e.g., pitot-static inaccuracies).
+- CAS to TAS accounts for environmental effects such as air pressure and temperature (i.e., altitude and atmospheric conditions).
+
+PX4 estimates the IAS to CAS scale (referred to as the CAS scale) during flight using GNSS ground speed and wind estimation. To compute the final TAS, standard environment conversions are applied(CAS → TAS).
+
+This CAS scaling plays an important role in keeping the [innovation check](#innovation-check) reliable, since a well-estimated CAS is key to spotting inconsistencies between measured and predicted airspeed. If the estimated CAS scale is innacurate, it can mask real airspeed faults or trigger false positives.
+
+If you observe that the CAS scale estimate is consistently off, or if it is converging too slowly, you can manually set it using [ASPD_SCALE_n](#aspd_scale_n_table) (where `n` is the sensor number). [ASPD_SCALE_APPLY](#aspd_scale_apply_table) can be used to configure when/if the estimated scale is applied.
+
+::: info
+For a quick manual CAS scale estimate, compare groundspeed minus windspeed (from the [VehicleLocalPosition](../msg_docs/VehicleLocalPosition.md) and [Wind](../msg_docs/Wind.md) messages, respectively) to indicated airspeed values (in the [Airspeed](../msg_docs/Airspeed.md) message). The ratio of indicated airspeed to groundspeed minus windspeed can provide a reasonable starting estimate for [ASPD_SCALE_n](#aspd_scale_n_table).
+:::
+
 ## Validation Checks
 
 These checks are primarily designed to validate incoming airspeed sensor data and detect potential sensor failures during flight. However, they may also trigger due to configuration issues, estimator inaccuracies, or specific flight conditions that lead to physically inconsistent measurements.
@@ -18,8 +36,7 @@ The following overview summarizes each check, common failure causes, and relevan
 ### Missing Data Check
 
 ::: info
-This check is independent of the other validation checks and cannot be disabled or configured.
-It must pass for any of the other checks to run.
+This check is independent of the other validation checks. It must pass for any of the other checks to run.
 :::
 
 Triggers when no new airspeed data has been received for more than 1 second.
@@ -34,7 +51,7 @@ Triggers when the measured indicated airspeed (IAS) has not changed for more tha
 
 Common failure causes:
 
-- Faulty or blocked airspeed sensor (pitot tube).
+- Airspeed sensor driver issues.
 - Very low sensor resolution.
 
 ### Innovation Check
@@ -48,12 +65,15 @@ Common failure causes:
 
 - Faulty or blocked airspeed sensor (_sensor fault_)
 - Poor sensor placement on vehicle (_configuration issue_)
-- Poor GNSS data (_estimator innacuracy_)
-- Inaccurate wind estimate (_estimator innacuracy_)
+- Badly estimated CAS scale (or convergence of estimate too slow) (_estimator innacuracy_)
 
 Relevant parameters: [ASPD_FS_INNOV](#aspd_fs_innov_table), [ASPD_FS_INTEG](#aspd_fs_integ_table)
 
 ### Load Factor Check
+
+::: info
+This check is disabled by default because it often triggers during manual landings, where the vehicle naturally slows down and may momentarily "stall" near touchdown. Since the system cannot reliably distinguish between a real in-flight stall and this expected behavior, false positives are common.
+:::
 
 Checks whether the measured airspeed is physically consistent with the aircraft's current load factor.
 If the measured airspeed is too low to plausibly generate the required lift, the sensor reading is considered invalid.
@@ -63,10 +83,10 @@ This check helps detect cases where the airspeed sensor may be under-reading dur
 Common failure causes:
 
 - Faulty or blocked airspeed sensor (_sensor fault_)
+- The vehicle is stalling (_flight condition_)
 - Uncalibrated airspeed sensor (_configuration issue_)
 - Poor sensor placement on vehicle (_configuration issue_)
 - Incorrect stall speed configuration (_configuration issue_)
-- The vehicle is stalling (_flight condition_)
 
 Relevant parameters: [FW_AIRSPD_STALL](#fw_airspd_stall_table)
 
@@ -87,16 +107,6 @@ Common failure causes:
 - Incorrect trim or max throttle setting (_configuration issue_)
 
 Relevant parameters: [ASPD_FP_T_WINDOW](#aspd_fp_t_window_table), [FW_PSP_OFF](#fw_psp_off_table), [FW_THR_TRIM](#fw_thr_trim_table), [FW_THR_MAX](#fw_thr_max_table)
-
-## TAS Scale Considerations
-
-The True Airspeed (TAS) scale is a dynamic correction factor used to account for discrepancies between measured Indicated Airspeed (IAS) and the actual airspeed an aircraft experiences in flight.
-PX4 estimates this TAS scale using GNSS ground speed and wind estimation during fixed-wing flight.
-
-This scaling plays an important role in keeping the [innovation check](#innovation-check) reliable, since a well-estimated TAS is key to spotting inconsistencies between measured and predicted airspeed.
-If the TAS scale is incorrect, it can mask real airspeed faults or trigger false positives.
-
-If the estimated scale appears consistently off, you can override it by setting a fixed value using [ASPD_SCALE_n](#aspd_scale_n_table) (where `n` is the sensor number), and disable the estimated scale with [ASPD_SCALE_APPLY](#aspd_scale_apply_table).
 
 ## Additional Configuration
 
