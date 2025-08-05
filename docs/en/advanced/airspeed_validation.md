@@ -9,15 +9,26 @@ By default, the [Missing Data](#missing-data-check), [Data Stuck](#data-stuck-ch
 You can configure which checks are active using the [ASPD_DO_CHECKS](#aspd_do_checks_table) parameter.
 :::
 
-## TAS Scale Considerations
 
-Airspeed conversions in PX4 typically follow this path:
-IAS (Indicated Airspeed) → CAS (Calibrated Airspeed) → TAS (True Airspeed)
+## Airspeed in PX4
 
-- IAS to CAS accounts for sensor-specific errors and installation effects (e.g., pitot-static inaccuracies).
-- CAS to TAS accounts for environmental effects such as air pressure and temperature (i.e., altitude and atmospheric conditions).
+PX4 handles multiple types of airspeed:
 
-PX4 estimates the IAS to CAS scale (referred to as the CAS scale) during flight using GNSS ground speed and wind estimation. To compute the final TAS, standard environment conversions are applied(CAS → TAS).
+- IAS (Indicated Airspeed): The raw measurement from the airspeed sensor, directly influenced by sensor characteristics and installation effects (e.g., pitot-static errors).
+
+- CAS (Calibrated Airspeed): IAS corrected for sensor-specific and installation-related errors.
+
+- EAS (Equivalent Airspeed) **Not explicitly handled by PX4**: Calibrated airspeed corrected for compressibility effects. While PX4 does not currently model EAS separately, this correction is negligible at low speeds and altitudes, so EAS is treated as equivalent to CAS for simplicity.
+
+- TAS (True Airspeed): CAS adjusted for atmospheric effects such as air pressure and temperature (i.e., altitude and atmospheric conditions).
+
+The standard conversion chain used in PX4 is:
+
+IAS → CAS (= EAS) → TAS
+
+## CAS Scale Estimation
+
+PX4 estimates the IAS to CAS scale (referred to as the CAS scale) during flight using GNSS ground speed and wind estimation. To compute the final TAS, standard environment conversions are applied (CAS → TAS).
 
 This CAS scaling plays an important role in keeping the [innovation check](#innovation-check) reliable, since a well-estimated CAS is key to spotting inconsistencies between measured and predicted airspeed. If the estimated CAS scale is innacurate, it can mask real airspeed faults or trigger false positives.
 
@@ -127,7 +138,7 @@ During a fixed-wing flight in rainy conditions, the pitot tube became blocked. T
 [ASPD_DO_CHECKS](#aspd_do_checks_table) = 5 ([missing data check](#missing-data-check) and [innovation check](#innovation-check) enabled) \
 [ASPD_FS_INNOV](#aspd_fs_innov_table) = 4 \
 [ASPD_FS_INTEG](#aspd_fs_integ_table) = 10 \
-[FW_AIRSPD_STALL](#fw_aspd_stall_table) = 12 \
+[FW_AIRSPD_STALL](#fw_airspd_stall_table) = 12 \
 [ASPD_FS_T_STOP](#aspd_fs_t_stop_table) = 2
 
 In this scenario, the airspeed sensor was flagged as invalid by the innovation check four seconds after the blockage occurred (shown by the middle plots). This delay consisted of:
@@ -184,5 +195,5 @@ Listed below are all the relevant paramaters.
 | <a id="aspd_fs_t_start_table"></a>[ASPD_FS_T_START](../advanced_config/parameter_reference.md#ASPD_FS_T_START)       | Delay after passing validation before using sensor data. Affects how soon a recovered sensor is trusted. | All Checks                |
 | <a id="aspd_fs_t_stop_table"></a>[ASPD_FS_T_STOP](../advanced_config/parameter_reference.md#ASPD_FS_T_STOP)          | Delay after failure before declaring data invalid. Affects how quickly faults lead to rejection.         | All Checks                  |
 | <a id="aspd_fallback_table"></a>[ASPD_FALLBACK](../advanced_config/parameter_reference.md#ASPD_FALLBACK)             | Determines fallback mode when airspeed data is lost or invalid.                                          | System behavior (post-check) |
-| <a id="aspd_scale_apply_table"></a>[ASPD_SCALE_APPLY](../advanced_config/parameter_reference.md#ASPD_SCALE_APPLY)    | Controls if/when to apply estimated TAS scaling. Poor scaling can cause false innovation failures.       | [Innovation Check](#innovation-check) (indirect) |
-| <a id="aspd_scale_n_table"></a>[ASPD_SCALE_n](../advanced_config/parameter_reference.md#ASPD_SCALE_1)                | User-defined IAS to TAS scale override per sensor. May help when auto-scale estimation is unreliable.    | [Innovation Check](#innovation-check) (indirect) |
+| <a id="aspd_scale_apply_table"></a>[ASPD_SCALE_APPLY](../advanced_config/parameter_reference.md#ASPD_SCALE_APPLY)    | Controls if/when to apply estimated CAS scaling. Poor scaling can cause false innovation failures.       | [Innovation Check](#innovation-check) (indirect) |
+| <a id="aspd_scale_n_table"></a>[ASPD_SCALE_n](../advanced_config/parameter_reference.md#ASPD_SCALE_1)                | User-defined IAS to CAS scale override per sensor. May help when auto-scale estimation is unreliable.    | [Innovation Check](#innovation-check) (indirect) |
