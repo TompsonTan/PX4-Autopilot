@@ -141,14 +141,20 @@ During a fixed-wing flight in rainy conditions, the pitot tube became blocked. T
 [FW_AIRSPD_STALL](#fw_airspd_stall_table) = 12 \
 [ASPD_FS_T_STOP](#aspd_fs_t_stop_table) = 2
 
-In this scenario, the airspeed sensor was flagged as invalid by the innovation check four seconds after the blockage occurred (shown by the middle plots). This delay consisted of:
+The figure below shows the incoming airspeed data, and the moment it was flagged invalid (1):
 
-- 2 seconds to accumulate enough error in the innovation integrator (per ASPD_FS_INTEG)
-- 2 seconds to satisfy the ASPD_FS_T_STOP hold time before the failure was declared
+![Example 1: Rain Blockage](../../assets/advanced/airspeed_validation_rain_1.png)
 
-Had the [load factor check](#load-factor-check) been enabled, the check would have been triggered immedietly (shown by the right plots).
+In this scenario, the airspeed sensor was flagged as invalid by the innovation check. The TAS scale innovation (2) exceeded the threshold specified by ASPD_FS_INNOV. This exceedence is integrated until the ASPD_FS_INTEG threshold is reached (3). This check triggered four seconds after the blockage occured. This delay consisted of:
 
-![Example 1: Rain](../../assets/advanced/airspeed_validation_rain.png)
+- two seconds to accumulate enough error in the innovation integrator (per ASPD_FS_INTEG)
+- two seconds to satisfy the ASPD_FS_T_STOP hold time before the failure was declared
+
+![Example 1: Rain Blockage (Innovation Check)](../../assets/advanced/airspeed_validation_rain_2.png)
+
+Had the [load factor check](#load-factor-check) been enabled, the check would have been triggered immedietly. The left plot shows that at the time of failure, the vehicle was flying more or less level (load factor 1). When the airspeed suddenly dropped, the check would have triggered (4), as the measured airspeed would not have been enough for the observed flight condition:
+
+![Example 1: Rain Blockage (Load Factor Check)](../../assets/advanced/airspeed_validation_rain_3.png)
 
 ### Flight 2: Pitot Tube Icing
 
@@ -160,22 +166,22 @@ This example involves a vehicle that experienced pitot tube icing during flight.
 [ASPD_FP_T_WINDOW](#aspd_fp_t_window_table) =2 \
 [ASPD_FS_T_STOP](#aspd_fs_t_stop_table) = 2
 
-Pitot icing primarily triggers the first principle check. This check requires four consecutive seconds of invalid airspeed:
+The figure below shows the incoming airspeed data, and the moment it was flagged invalid (1):
 
-- 2 seconds of inconsistent behavior (as defined by ASPD_FP_T_WINDOW)
-- 2 seconds to satisfy the failure hold time (ASPD_FS_T_STOP)
+![Example 2: Pitot Tube Icing](../../assets/advanced/airspeed_validation_ice_1.png)
 
-This time window is shown as a blue box in the graph below. Within it, the vehicle's throttle is more than 5% above trim, the nose is pitched down, but the indicated airspeed is not increasing; indicating a likely blockage.
+In this scenario, the airspeed sensor was flagged as invalid by the first principle check. This check requires four consecutive seconds of invalid airspeed:
 
-![Example 2: Icing (First Principle Check)](../../assets/advanced/airspeed_validation_ice_fp.png)
+- two seconds of inconsistent behavior (as defined by ASPD_FP_T_WINDOW)
+- two seconds to satisfy the failure hold time (ASPD_FS_T_STOP)
 
-The innovation check would not have triggered until more than a minute later. This delay occurred because the CAS scale estimate was adapting to compensate for the discrepancy between ground speed and measured airspeed.
+The check triggers if the aircraft is nose-down (2), the throttle is 5% above trim (3), but the measured airspeed is not increasing (4) for at least four seconds.
 
-The top-right graph shows scale adjustments working to "straighten" the validated TAS in the top-middle plot.
+![Example 2: Pitot Tube Icing (First Principle Check)](../../assets/advanced/airspeed_validation_ice_2.png)
 
-As a result, the innovation metric stayed within limits for some time. Only when the measured airspeed began decreasing too significantly would the innovation check have failed, shown by the bottom-middle plot.
+We can check when the innovation check would have triggered. The red line (5) marks the point when the airspeed was flagged as invalid by the first principle check. The green line (6) marks the point when the innovation check would have triggered: more than a minute later. The middle plot shows an increase in the TAS scale estimation after the failure occured to try and compensate for the difference between the GNSS based speed and the measured airspeed. As a result, the innovation metric stayed within limits for some time. Only when the measured airspeed began decreasing very quickly would the innovation check have failed.
 
-![Example 2: Icing (Innovation Check)](../../assets/advanced/airspeed_validation_ice_innov.png)
+![Example 2: Pitot Tube Icing (Innovation Check)](../../assets/advanced/airspeed_validation_ice_3.png)
 
 
 ## Parameters
