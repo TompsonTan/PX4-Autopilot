@@ -117,6 +117,56 @@ To configure the delay before PX4 starts or stops using airspeed sensor data aft
 [ASPD_FS_T_STOP](#aspd_fs_t_stop_table): Delay after failing validation before the sensor is considered invalid.
 
 
+
+## Examples
+
+### Flight 1: Blocked Pitot Tube during Rainy Conditions
+
+During a fixed-wing flight in rainy conditions, the pitot tube became blocked. The following configuration was used:
+
+[ASPD_DO_CHECKS](#aspd_do_checks_table) = 5 ([missing data check](#missing-data-check) and [innovation check](#innovation-check) enabled) \
+[ASPD_FS_INNOV](#aspd_fs_innov_table) = 4 \
+[ASPD_FS_INTEG](#aspd_fs_integ_table) = 10 \
+[FW_AIRSPD_STALL](#fw_aspd_stall_table) = 12 \
+[ASPD_FS_T_STOP](#aspd_fs_t_stop_table) = 2
+
+In this scenario, the airspeed sensor was flagged as invalid by the innovation check four seconds after the blockage occurred (shown by the middle plots). This delay consisted of:
+
+- 2 seconds to accumulate enough error in the innovation integrator (per ASPD_FS_INTEG)
+- 2 seconds to satisfy the ASPD_FS_T_STOP hold time before the failure was declared
+
+Had the [load factor check](#load-factor-check) been enabled, the check would have been triggered immedietly (shown by the right plots).
+
+![Example 1: Rain](../../assets/advanced/airspeed_validation_rain.png)
+
+### Flight 2: Pitot Tube Icing
+
+This example involves a vehicle that experienced pitot tube icing during flight. The configuration was:
+
+[ASPD_DO_CHECKS](#aspd_do_checks_table) = 23 ([missing data check](#missing-data-check), [innovation check](#innovation-check) and [first principle check](#first-principle-check) enabled) \
+[FW_PSP_OFF](#fw_psp_off_table) = 4 (degrees) \
+[FW_THR_TRIM](#fw_thr_trim_table) = 0.6 \
+[ASPD_FP_T_WINDOW](#aspd_fp_t_window_table) =2 \
+[ASPD_FS_T_STOP](#aspd_fs_t_stop_table) = 2
+
+Pitot icing primarily triggers the first principle check. This check requires four consecutive seconds of invalid airspeed:
+
+- 2 seconds of inconsistent behavior (as defined by ASPD_FP_T_WINDOW)
+- 2 seconds to satisfy the failure hold time (ASPD_FS_T_STOP)
+
+This time window is shown as a blue box in the graph below. Within it, the vehicle's throttle is more than 5% above trim, the nose is pitched down, but the indicated airspeed is not increasing; indicating a likely blockage.
+
+![Example 2: Icing (First Principle Check)](../../assets/advanced/airspeed_validation_ice_fp.png)
+
+The innovation check would not have triggered until more than a minute later. This delay occurred because the CAS scale estimate was adapting to compensate for the discrepancy between ground speed and measured airspeed.
+
+The top-right graph shows scale adjustments working to "straighten" the validated TAS in the top-middle plot.
+
+As a result, the innovation metric stayed within limits for some time. Only when the measured airspeed began decreasing too significantly would the innovation check have failed, shown by the bottom-middle plot.
+
+![Example 2: Icing (Innovation Check)](../../assets/advanced/airspeed_validation_ice_innov.png)
+
+
 ## Parameters
 
 Listed below are all the relevant paramaters.
