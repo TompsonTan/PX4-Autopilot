@@ -148,7 +148,7 @@ The following configuration was used:
 
 The figure below shows the incoming airspeed data, and the moment it was flagged invalid (1):
 
-![Example 1: Rain Blockage](../../assets/advanced/airspeed_validation_rain_1.png)
+![Example 1: Rain Blockage](../../assets/advanced_config/airspeed_validation/rain_1.png)
 
 In this scenario, the airspeed sensor was flagged as invalid by the innovation check.
 The TAS scale innovation (2) exceeded the threshold specified by `ASPD_FS_INNOV`.
@@ -159,13 +159,13 @@ This delay consisted of:
 - two seconds to accumulate enough error in the innovation integrator (per `ASPD_FS_INTEG`)
 - two seconds to satisfy the `ASPD_FS_T_STOP` hold time before the failure was declared
 
-![Example 1: Rain Blockage (Innovation Check)](../../assets/advanced/airspeed_validation_rain_2.png)
+![Example 1: Rain Blockage (Innovation Check)](../../assets/advanced_config/airspeed_validation/rain_2.png)
 
 Had the [load factor check](#load-factor-check) been enabled, the check would have been triggered immediately.
 The left plot shows that at the time of failure, the vehicle was flying more or less level (load factor 1).
 When the airspeed suddenly dropped, the check would have triggered (4), as the measured airspeed would not have been enough for the observed flight condition:
 
-![Example 1: Rain Blockage (Load Factor Check)](../../assets/advanced/airspeed_validation_rain_3.png)
+![Example 1: Rain Blockage (Load Factor Check)](../../assets/advanced_config/airspeed_validation/rain_3.png)
 
 ### Flight 2: Pitot Tube Icing
 
@@ -180,7 +180,7 @@ The configuration was:
 
 The figure below shows the incoming airspeed data, and the moment it was flagged invalid (1):
 
-![Example 2: Pitot Tube Icing](../../assets/advanced/airspeed_validation_ice_1.png)
+![Example 2: Pitot Tube Icing](../../assets/advanced_config/airspeed_validation/ice_1.png)
 
 In this scenario, the airspeed sensor was flagged as invalid by the first principle check.
 This check requires four consecutive seconds of invalid airspeed:
@@ -190,7 +190,7 @@ This check requires four consecutive seconds of invalid airspeed:
 
 The check triggers if the aircraft is nose-down (2), the throttle is 5% above trim (3), but the measured airspeed is not increasing (4) for at least four seconds.
 
-![Example 2: Pitot Tube Icing (First Principle Check)](../../assets/advanced/airspeed_validation_ice_2.png)
+![Example 2: Pitot Tube Icing (First Principle Check)](../../assets/advanced_config/airspeed_validation/ice_2.png)
 
 We can check when the innovation check would have triggered.
 The red line (5) marks the point when the airspeed was flagged as invalid by the first principle check.
@@ -199,7 +199,7 @@ The middle plot shows an increase in the TAS scale estimation after the failure 
 As a result, the innovation metric stayed within limits for some time.
 Only when the measured airspeed began decreasing very quickly would the innovation check have failed.
 
-![Example 2: Pitot Tube Icing (Innovation Check)](../../assets/advanced/airspeed_validation_ice_3.png)
+![Example 2: Pitot Tube Icing (Innovation Check)](../../assets/advanced_config/airspeed_validation/ice_3.png)
 
 ## Parameters
 
@@ -220,7 +220,3 @@ Listed below are all the relevant parameters.
 | <a id="aspd_fallback_table"></a>[ASPD_FALLBACK](../advanced_config/parameter_reference.md#ASPD_FALLBACK)          | Fallback mode when airspeed data is lost or invalid.                                                     | System behavior (post-check)                     |
 | <a id="aspd_scale_apply_table"></a>[ASPD_SCALE_APPLY](../advanced_config/parameter_reference.md#ASPD_SCALE_APPLY) | Controls if/when to apply estimated CAS scaling. Poor scaling can cause false innovation failures.       | [Innovation Check](#innovation-check) (indirect) |
 | <a id="aspd_scale_n_table"></a>[ASPD_SCALE_n](../advanced_config/parameter_reference.md#ASPD_SCALE_1)             | User-defined IAS to CAS scale override per sensor. May help when auto-scale estimation is unreliable.    | [Innovation Check](#innovation-check) (indirect) |
-
-0: Fallback only to other airspeed sensors
-1: Fallback to groundspeed-minus-windspeed airspeed estimation
-2: Fallback to thrust based airspeed estimation
