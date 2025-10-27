@@ -48,7 +48,6 @@ FwAutotuneAttitudeControl::FwAutotuneAttitudeControl(bool is_vtol) :
 	_actuator_controls_status_sub(is_vtol ? ORB_ID(actuator_controls_status_1) : ORB_ID(actuator_controls_status_0))
 {
 	_autotune_attitude_control_status_pub.advertise();
-	reset();
 }
 
 FwAutotuneAttitudeControl::~FwAutotuneAttitudeControl()
@@ -71,11 +70,6 @@ bool FwAutotuneAttitudeControl::init()
 	}
 
 	return true;
-}
-
-void FwAutotuneAttitudeControl::reset()
-{
-	_param_fw_at_start.reset();
 }
 
 void FwAutotuneAttitudeControl::Run()
@@ -107,10 +101,25 @@ void FwAutotuneAttitudeControl::Run()
 		}
 	}
 
+	if (_vehicle_command_sub.updated()) {
+		vehicle_command_s vehicle_command;
+
+		if (_vehicle_command_sub.copy(&vehicle_command)) {
+			if (vehicle_command.command == vehicle_command_s::VEHICLE_CMD_DO_AUTOTUNE_ENABLE) {
+				_vehicle_cmd_start_autotune = (fabsf(vehicle_command.param1 - 1.0f) < FLT_EPSILON);
+
+				if (fabsf(vehicle_command.param2) > 0.f) {
+					PX4_WARN("Axis selection through mavlink not supported. Using mask set by FW_AT_AXES");
+				}
+			}
+		}
+	}
+
 	_aux_switch_en = isAuxEnableSwitchEnabled();
+	_want_start_autotune = _vehicle_cmd_start_autotune || _aux_switch_en;
 
 	// new control data needed every iteration
-	if ((_state == state::idle && !_aux_switch_en)
+	if ((_state == state::idle && !_want_start_autotune)
 	    || !_vehicle_torque_setpoint_sub.updated()) {
 
 		return;
@@ -310,7 +319,8 @@ void FwAutotuneAttitudeControl::updateStateMachine(hrt_abstime now)
 
 	switch (_state) {
 	case state::idle:
-		if (_param_fw_at_start.get() || _aux_switch_en) {
+
+		if (_want_start_autotune) {
 
 			mavlink_log_info(&_mavlink_log_pub, "Autotune started");
 			_state = state::init;
@@ -540,8 +550,7 @@ void FwAutotuneAttitudeControl::updateStateMachine(hrt_abstime now)
 			orb_advert_t mavlink_log_pub = nullptr;
 			mavlink_log_info(&mavlink_log_pub, "Autotune returned to idle");
 			_state = state::idle;
-			_param_fw_at_start.set(false);
-			_param_fw_at_start.commit();
+			_vehicle_cmd_start_autotune = false;
 		}
 
 		break;
