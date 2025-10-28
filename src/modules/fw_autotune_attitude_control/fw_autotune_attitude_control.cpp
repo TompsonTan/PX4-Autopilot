@@ -570,7 +570,7 @@ void FwAutotuneAttitudeControl::updateStateMachine(hrt_abstime now)
 			// Abort
 			mavlink_log_critical(&mavlink_log_pub, "Autotune aborted before finishing");
 			_state = state::fail;
-
+			_start_flight_mode = _nav_state;
 			_state_start_time = now;
 
 		} else if (timeout) {
@@ -598,10 +598,9 @@ void FwAutotuneAttitudeControl::updateStateMachine(hrt_abstime now)
 				break;
 			}
 
+			_start_flight_mode = _nav_state;
 			_state_start_time = now;
 		}
-
-
 	}
 }
 

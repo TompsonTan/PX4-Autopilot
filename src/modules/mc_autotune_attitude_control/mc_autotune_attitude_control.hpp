@@ -137,6 +137,8 @@ private:
 	int8_t _signal_sign{0};
 
 	bool _armed{false};
+	uint8_t _nav_state{0};
+	uint8_t _start_flight_mode{0};
 	bool _vehicle_cmd_start_autotune{false};
 
 	matrix::Vector3f _kid{};

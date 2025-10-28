@@ -91,6 +91,7 @@ void McAutotuneAttitudeControl::Run()
 
 		if (_vehicle_status_sub.copy(&vehicle_status)) {
 			_armed = (vehicle_status.arming_state == vehicle_status_s::ARMING_STATE_ARMED);
+			_nav_state = vehicle_status.nav_state;
 		}
 	}
 
@@ -289,6 +290,7 @@ void McAutotuneAttitudeControl::updateStateMachine(hrt_abstime now)
 			}
 
 			_state_start_time = now;
+			_start_flight_mode = _nav_state;
 		}
 
 		break;
@@ -447,17 +449,23 @@ void McAutotuneAttitudeControl::updateStateMachine(hrt_abstime now)
 		break;
 	}
 
-	// In case of convergence timeout or pilot intervention,
+	// In case of convergence timeout, pilot intervention or mode change,
 	// the identification sequence is aborted immediately
 	manual_control_setpoint_s manual_control_setpoint{};
 	_manual_control_setpoint_sub.copy(&manual_control_setpoint);
 
+	const bool timeout = (now - _state_start_time) > 20_s;
+	const bool mode_changed = (_start_flight_mode != _nav_state);
+	const bool pilot_intervention = ((fabsf(manual_control_setpoint.roll) > 0.05f)
+					 || (fabsf(manual_control_setpoint.pitch) > 0.05f));
+
+	const bool should_abort = timeout || mode_changed || pilot_intervention;
+
 	if (_state != state::wait_for_disarm
-	    && _state != state::idle
-	    && (((now - _state_start_time) > 20_s)
-		|| (fabsf(manual_control_setpoint.roll) > 0.05f)
-		|| (fabsf(manual_control_setpoint.pitch) > 0.05f))) {
+	    && _state != state::idle && should_abort) {
+
 		_state = state::fail;
+		_start_flight_mode = _nav_state;
 		_state_start_time = now;
 	}
 }
