@@ -622,7 +622,7 @@ void MavlinkReceiver::handle_message_command_both(mavlink_message_t *msg, const 
 		autotune_attitude_control_status_s status{};
 		_autotune_attitude_control_status_sub.copy(&status);
 
-		// send vehicle command once if:
+		// publish vehicle command once if:
 		// - autotune is not already running
 		// - we are not in transition
 		// - autotune module is enabled
