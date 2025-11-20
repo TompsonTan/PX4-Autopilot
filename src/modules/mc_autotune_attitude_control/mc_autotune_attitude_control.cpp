@@ -110,17 +110,6 @@ void McAutotuneAttitudeControl::Run()
 			if (vehicle_command.command == vehicle_command_s::VEHICLE_CMD_DO_AUTOTUNE_ENABLE) {
 				if (fabsf(vehicle_command.param1 - 1.0f) < FLT_EPSILON) {
 					_vehicle_cmd_start_autotune = true;
-
-				} else if (fabsf(vehicle_command.param1) < FLT_EPSILON) {
-					PX4_WARN("Disabling autotune through mavlink not supported.");
-
-				} else {
-					PX4_WARN("Invalid param1 for VEHICLE_CMD_DO_AUTOTUNE_ENABLE: %.1f (expected 0 or 1)", (double)vehicle_command.param1);
-					_vehicle_cmd_start_autotune = false; // default to safe value
-				}
-
-				if (fabsf(vehicle_command.param2) > 0.f) {
-					PX4_WARN("Axis selection not supported.");
 				}
 			}
 		}
