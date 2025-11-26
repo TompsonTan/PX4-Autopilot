@@ -96,6 +96,7 @@ public:
 	// setters wind estimator parameters
 	void set_wind_estimator_wind_process_noise_spectral_density(float wind_nsd) { _wind_estimator.set_wind_process_noise_spectral_density(wind_nsd); }
 	void set_wind_estimator_tas_scale_process_noise_spectral_density(float tas_scale_nsd) { _wind_estimator.set_tas_scale_process_noise_spectral_density(tas_scale_nsd); }
+	void set_wind_estimator_tas_scale_fast_initial_learning(bool enable) {_wind_estimator.set_tas_scale_fast_initial_learning(enable); }
 	void set_wind_estimator_tas_scale_init(float tas_scale_init)
 	{
 		_tas_scale_init = tas_scale_init;

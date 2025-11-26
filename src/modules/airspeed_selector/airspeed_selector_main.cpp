@@ -187,6 +187,7 @@ private:
 	DEFINE_PARAMETERS(
 		(ParamFloat<px4::params::ASPD_WIND_NSD>) _param_aspd_wind_nsd,
 		(ParamFloat<px4::params::ASPD_SCALE_NSD>) _param_aspd_scale_nsd,
+		(ParamBool<px4::params::ASPD_SCALE_FAST>) _param_aspd_scale_fast,
 		(ParamFloat<px4::params::ASPD_TAS_NOISE>) _param_west_tas_noise,
 		(ParamFloat<px4::params::ASPD_BETA_NOISE>) _param_west_beta_noise,
 		(ParamInt<px4::params::ASPD_TAS_GATE>) _param_west_tas_gate,
@@ -522,6 +523,7 @@ void AirspeedModule::update_params()
 	for (int i = 0; i < MAX_NUM_AIRSPEED_SENSORS; i++) {
 		_airspeed_validator[i].set_wind_estimator_wind_process_noise_spectral_density(_param_aspd_wind_nsd.get());
 		_airspeed_validator[i].set_wind_estimator_tas_scale_process_noise_spectral_density(_param_aspd_scale_nsd.get());
+		_airspeed_validator[i].set_wind_estimator_tas_scale_fast_initial_learning(_param_aspd_scale_fast.get());
 		_airspeed_validator[i].set_wind_estimator_tas_noise(_param_west_tas_noise.get());
 		_airspeed_validator[i].set_wind_estimator_beta_noise(_param_west_beta_noise.get());
 		_airspeed_validator[i].set_wind_estimator_tas_gate(_param_west_tas_gate.get());

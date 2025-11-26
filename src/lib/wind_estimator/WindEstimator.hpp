@@ -87,6 +87,7 @@ public:
 	// unaided, the state uncertainty (diagonal of sqrt(P)) grows by the process noise spectral density every second
 	void set_wind_process_noise_spectral_density(float wind_nsd) { _wind_psd = wind_nsd * wind_nsd; }
 	void set_tas_scale_process_noise_spectral_density(float tas_scale_nsd) { _tas_scale_psd = tas_scale_nsd * tas_scale_nsd; }
+	void set_tas_scale_fast_initial_learning(bool enable) { _tas_scale_fast_initial_learning = enable; }
 
 	void set_tas_noise(float tas_sigma) { _tas_var = tas_sigma * tas_sigma; }
 	void set_beta_noise(float beta_var) { _beta_var = beta_var * beta_var; }
@@ -129,6 +130,7 @@ private:
 
 	float _wind_psd{0.1f};	///< wind process noise power spectral density (m^2/s^4/Hz)
 	float _tas_scale_psd{0.0001f};	///< true airspeed process noise power spectral density (1/s^2/Hz)
+	bool  _tas_scale_fast_initial_learning{false}; ///< enable faster scale learning for the first 300s of flight time
 	float _tas_var{1.4f};		///< true airspeed measurement noise variance
 	float _beta_var{0.5f};	///< sideslip measurement noise variance
 	uint8_t _tas_gate{3};	///< airspeed fusion gate size
@@ -139,6 +141,10 @@ private:
 	uint64_t _time_last_airspeed_fuse = 0;	///< timestamp of last airspeed fusion
 	uint64_t _time_last_beta_fuse = 0;	///< timestamp of last sideslip fusion
 	uint64_t _time_last_update = 0;		///< timestamp of last covariance prediction
+	uint64_t _time_initialised = 0;         ///< timestamp when estimator is initialised
+
+	static constexpr float kTASScalePSDMultiplier = 100;
+	static constexpr hrt_abstime kTASScaleFastLearnTime = 300_s;
 
 	bool _wind_estimator_reset = false; ///< wind estimator was reset in this cycle
 

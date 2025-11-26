@@ -28,6 +28,18 @@ PARAM_DEFINE_FLOAT(ASPD_WIND_NSD, 1.e-1f);
 PARAM_DEFINE_FLOAT(ASPD_SCALE_NSD, 1.e-4f);
 
 /**
+ * Enables faster airspeed scale learning at the beginning of a flight
+ *
+ * When enabled, the wind estimator uses 10x higher process noise spectral density for the airspeed
+ * scale during the first 5 minutes of flight, allowing the scale estimate to converge
+ * much faster.
+ *
+ * @boolean
+ * @group Airspeed Validator
+ */
+PARAM_DEFINE_INT32(ASPD_SCALE_FAST, 0);
+
+/**
  * Wind estimator true airspeed measurement noise
  *
  * True airspeed measurement noise of the internal wind estimator(s) of the airspeed selector.
