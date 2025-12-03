@@ -1,0 +1,29 @@
+menuconfig DRIVERS_VTX
+	bool "VTX Driver"
+	default n
+	---help---
+		Enable support for controlling VTX devices via serial interface.
+
+if DRIVERS_VTX
+
+	config VTX_UORB_CONFIG
+		bool "Use uORB Messages to configure the VTX table and AUX map"
+		default n
+		---help---
+			Enable uORB based VTX configuration interface.
+			Allows setting VTX table and AUX map via uORB messages.
+
+	config VTX_CONFIG_FILE
+		string "VTX Configuration File Path"
+		default ""
+		---help---
+			Allows saving/loading the VTX table and aux config
+			from a file system. For example from the SD card path
+			"/fs/microsd/vtx_config".
+
+	config VTX_USE_STORAGE
+		bool
+		default y if VTX_CONFIG_FILE != ""
+		default n if !(VTX_CONFIG_FILE != "")
+
+endif # DRIVERS_VTX
