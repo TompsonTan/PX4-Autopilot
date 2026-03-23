@@ -12,11 +12,17 @@ bmi088 -G -R 2 -s start
 # 42688P
 icm42688p -s start
 
+# bmi270
+bmi270 -s -b 1 -R 6 start
+bmi270 -s -b 4 -R 6 start
+
 # baro
 dps310 -I start -a 118
+spl06 -I start - a 119
 
 # internal mag
 ist8310 -I -R 2 start
+qmc5883p -I -R 4 start
 
 #osd
 atxxxx -s start
